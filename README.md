@@ -1,4 +1,4 @@
-# noti-summary-app
+# noti-summary-
 
 ![Platform](https://img.shields.io/badge/Platform-Android-brightgreen.svg)
 ![Language](https://img.shields.io/badge/Language-Kotlin-yellowgreen.svg)
