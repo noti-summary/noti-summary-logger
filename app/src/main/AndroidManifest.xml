@@ -13,6 +13,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Summarylogger"
         tools:targetApi="31">
+        <service
+            android:name=".service.NotiListenerService"
+            android:enabled="true"
+            android:exported="true" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
