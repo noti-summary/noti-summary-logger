@@ -25,8 +25,8 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-        val intent = Intent(this@MainActivity, ContextListenerService::class.java)
-        startService(intent)
+        val contextListenerServiceIntent = Intent(this@MainActivity, ContextListenerService::class.java)
+        startService(contextListenerServiceIntent)
     }
 }
 
