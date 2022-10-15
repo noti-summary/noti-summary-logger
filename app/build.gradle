@@ -2,6 +2,8 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'com.google.gms.google-services'
+    id 'kotlin-android'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -65,5 +67,11 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:31.0.0')
     // Declare the dependency for the Cloud Firestore library
     implementation 'com.google.firebase:firebase-firestore-ktx'
+
+    def room_version = "2.4.3"
+    implementation "androidx.room:room-runtime:$room_version"
+    annotationProcessor "androidx.room:room-compiler:$room_version"
+    // To use Kotlin annotation processing tool (kapt)
+    kapt "androidx.room:room-compiler:$room_version"
 
 }
