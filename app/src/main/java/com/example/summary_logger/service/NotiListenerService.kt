@@ -26,8 +26,7 @@ class NotiListenerService : NotificationListenerService() {
     }
 
     override fun onBind(intent: Intent?): IBinder? {
-//        return super.onBind(intent)
-        return null
+        return super.onBind(intent)
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
@@ -43,6 +42,9 @@ class NotiListenerService : NotificationListenerService() {
             val notificationId: String = userId + System.currentTimeMillis().toString()
             val notiItem = NotiItem(sbn, userId, notificationId)
             notiItem.printProperty()
+            Log.d("NotiListenerService", "${sbn?.postTime}")
+            Log.d("NotiListenerService", "${notiItem.title}")
+            TODO("double noti in Messenger")
         } catch (e: Exception) {
             e.printStackTrace()
         }

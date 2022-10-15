@@ -6,14 +6,15 @@ import android.util.Log
 
 class NotiItem(sbn: StatusBarNotification?, private val userId: String, private val notificationId: String) {
     private var notification: Notification? = null
+    var title: String? = null
     private var sbnId: Int? = null
     private var postTime: Long? = null
 
     init {
         postTime = sbn?.postTime
         notification = sbn?.notification
+        title = sbn?.notification?.extras?.getString("android.title")
         sbnId = sbn?.id
-        Log.d("NotiItem", "init")
     }
 
     fun printProperty() {
@@ -21,6 +22,7 @@ class NotiItem(sbn: StatusBarNotification?, private val userId: String, private 
         Log.d("NotiItem", "userId: ${this.userId}")
         Log.d("NotiItem", "postTime: ${this.postTime}")
         Log.d("NotiItem", "sbnId: ${this.sbnId}")
+        TODO("fix logging information from here")
     }
 
     fun upload() {

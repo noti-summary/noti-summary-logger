@@ -1,7 +1,9 @@
 package com.example.summary_logger
 
+import android.content.ComponentName
 import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,8 +19,14 @@ import com.example.summary_logger.ui.theme.SummaryloggerTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val notiListenerServiceIntent = Intent(this@MainActivity, NotiListenerService::class.java)
-        startService(notiListenerServiceIntent)
+
+        if (!isNotiListenerEnabled()) {
+            startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"))
+        }
+
+        val notiListenerIntent = Intent(this@MainActivity, NotiListenerService::class.java)
+        startService(notiListenerIntent)
+
         setContent {
             SummaryloggerTheme {
                 // A surface container using the 'background' color from the theme
@@ -27,6 +35,13 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun isNotiListenerEnabled(): Boolean {
+        val cn: ComponentName = ComponentName(this, NotiListenerService::class.java)
+        val flat: String =
+            Settings.Secure.getString(this.contentResolver, "enabled_notification_listeners")
+        return cn.flattenToString() in flat
     }
 }
 
