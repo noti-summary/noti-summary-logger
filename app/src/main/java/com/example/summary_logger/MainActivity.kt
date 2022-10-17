@@ -1,8 +1,12 @@
 package com.example.summary_logger
 
 import android.app.AlertDialog
+import android.content.DialogInterface
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
+import android.widget.EditText
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,8 +20,9 @@ import com.example.summary_logger.database.UserDao
 import com.example.summary_logger.database.UserDatabase
 import com.example.summary_logger.model.User
 import com.example.summary_logger.ui.theme.SummaryloggerTheme
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import com.example.summary_logger.util.ioThread
+import kotlinx.coroutines.*
+import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,13 +39,37 @@ class MainActivity : ComponentActivity() {
         val userDao: UserDao = UserDatabase.getInstance(this).userDao()
 
         GlobalScope.launch {
-            Log.i("user_id", userDao.getCurrentUserId())
+
+            // wait for database pre-populate
             Log.i("users", userDao.getAllUser().toString())
+            delay(500)
+
+            var userID : String = userDao.getCurrentUserId()
+            if(userID == "000"){
+                withContext(Dispatchers.Main) {
+                    val builder = AlertDialog.Builder(this@MainActivity)
+                    builder.setMessage("Please enter your user id")
+
+                    var input = EditText(this@MainActivity)
+                    input.inputType = InputType.TYPE_CLASS_TEXT
+                    builder.setView(input)
+
+                    builder.setPositiveButton("OK", DialogInterface.OnClickListener { dialog, which ->
+                        userID = input.text.toString()
+                        GlobalScope.launch {
+                            userDao.setUser(User(1, userID))
+                        }
+                        Toast.makeText(this@MainActivity, "user_id = $userID", Toast.LENGTH_LONG).show()
+                    })
+                    builder.show()
+                }
+            }
         }
 
     }
 
 }
+
 
 @Composable
 fun Greeting(name: String) {
