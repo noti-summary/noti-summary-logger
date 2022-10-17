@@ -1,5 +1,6 @@
 package com.example.summary_logger
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -30,12 +31,11 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        val db = UserDatabase(this)
-        val userDao: UserDao = db.userDao()
+        val userDao: UserDao = UserDatabase.getInstance(this).userDao()
 
         GlobalScope.launch {
-            userDao.setUser(User(1, "001"))
             Log.i("user_id", userDao.getCurrentUserId())
+            Log.i("users", userDao.getAllUser().toString())
         }
 
     }
