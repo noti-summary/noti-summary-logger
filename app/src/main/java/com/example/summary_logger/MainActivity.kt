@@ -1,6 +1,7 @@
 package com.example.summary_logger
 
 import android.app.AlertDialog
+import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
 import android.text.InputType
@@ -34,40 +35,43 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        val userDao: UserDao = UserDatabase.getInstance(this).userDao()
-
-        GlobalScope.launch {
-
-            // wait for database pre-populate
-            Log.i("users", userDao.getAllUser().toString())
-            delay(500)
-
-            var userID : String = userDao.getCurrentUserId()
-            if(userID == "000"){
-                withContext(Dispatchers.Main) {
-                    val builder = AlertDialog.Builder(this@MainActivity)
-                    builder.setMessage("Please enter your user id")
-
-                    var input = EditText(this@MainActivity)
-                    input.inputType = InputType.TYPE_CLASS_TEXT
-                    builder.setView(input)
-
-                    builder.setPositiveButton("OK", DialogInterface.OnClickListener { dialog, which ->
-                        userID = input.text.toString()
-                        GlobalScope.launch {
-                            userDao.setUser(User(user_id=userID))
-                        }
-                        Toast.makeText(this@MainActivity, "user_id = $userID", Toast.LENGTH_LONG).show()
-                    })
-                    builder.show()
-                }
-            }
-        }
+        checkUserId(this)
 
     }
 
 }
 
+fun checkUserId(context: Context){
+    val userDao: UserDao = UserDatabase.getInstance(context).userDao()
+
+    GlobalScope.launch {
+        // wait for database pre-populate
+        Log.i("users", userDao.getAllUser().toString())
+        delay(500)
+
+        var userID : String = userDao.getCurrentUserId()
+        if(userID == "000"){
+            withContext(Dispatchers.Main) {
+                val builder = AlertDialog.Builder(context)
+                builder.setMessage("Please enter your user id")
+
+                var input = EditText(context)
+                input.inputType = InputType.TYPE_CLASS_TEXT
+                builder.setView(input)
+
+                builder.setPositiveButton("OK", DialogInterface.OnClickListener { dialog, which ->
+                    userID = input.text.toString()
+                    GlobalScope.launch {
+                        userDao.setUser(User(user_id=userID))
+                        Log.i("user_id", userDao.getCurrentUserId())
+                    }
+                    Toast.makeText(context, "user_id = $userID", Toast.LENGTH_LONG).show()
+                })
+                builder.show()
+            }
+        }
+    }
+}
 
 @Composable
 fun Greeting(name: String) {
