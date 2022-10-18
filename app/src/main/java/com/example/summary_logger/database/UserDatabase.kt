@@ -1,7 +1,6 @@
 package com.example.summary_logger.database
 
 import android.content.Context
-import android.util.Log
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -29,7 +28,7 @@ abstract class UserDatabase : RoomDatabase() {
                     override fun onCreate(db: SupportSQLiteDatabase) {
                         super.onCreate(db)
                         ioThread {
-                            getInstance(context).userDao().setUser(User(1, "000"))
+                            getInstance(context).userDao().setUser(User(user_id="000"))
                         }
                     }
                 })

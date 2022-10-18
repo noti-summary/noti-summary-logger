@@ -20,9 +20,7 @@ import com.example.summary_logger.database.UserDao
 import com.example.summary_logger.database.UserDatabase
 import com.example.summary_logger.model.User
 import com.example.summary_logger.ui.theme.SummaryloggerTheme
-import com.example.summary_logger.util.ioThread
 import kotlinx.coroutines.*
-import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,7 +55,7 @@ class MainActivity : ComponentActivity() {
                     builder.setPositiveButton("OK", DialogInterface.OnClickListener { dialog, which ->
                         userID = input.text.toString()
                         GlobalScope.launch {
-                            userDao.setUser(User(1, userID))
+                            userDao.setUser(User(user_id=userID))
                         }
                         Toast.makeText(this@MainActivity, "user_id = $userID", Toast.LENGTH_LONG).show()
                     })
