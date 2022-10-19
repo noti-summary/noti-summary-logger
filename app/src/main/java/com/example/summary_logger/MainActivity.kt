@@ -35,41 +35,31 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        checkUserId(this)
+        setUserId(this)
 
     }
 
 }
 
-fun checkUserId(context: Context){
-    val userDao: UserDao = UserDatabase.getInstance(context).userDao()
+fun setUserId(context: Context){
+    val sharedPref = context.getSharedPreferences("user_id", Context.MODE_PRIVATE)
 
-    GlobalScope.launch {
-        // wait for database pre-populate
-        Log.i("users", userDao.getAllUser().toString())
-        delay(500)
+    if(sharedPref.getString("user_id", "000").toString() == "000"){
+        val builder = AlertDialog.Builder(context)
+        builder.setMessage("Please enter your user id")
 
-        var userID : String = userDao.getCurrentUserId()
-        if(userID == "000"){
-            withContext(Dispatchers.Main) {
-                val builder = AlertDialog.Builder(context)
-                builder.setMessage("Please enter your user id")
+        var input = EditText(context)
+        input.inputType = InputType.TYPE_CLASS_TEXT
+        builder.setView(input)
 
-                var input = EditText(context)
-                input.inputType = InputType.TYPE_CLASS_TEXT
-                builder.setView(input)
-
-                builder.setPositiveButton("OK", DialogInterface.OnClickListener { dialog, which ->
-                    userID = input.text.toString()
-                    GlobalScope.launch {
-                        userDao.setUser(User(user_id=userID))
-                        Log.i("user_id", userDao.getCurrentUserId())
-                    }
-                    Toast.makeText(context, "user_id = $userID", Toast.LENGTH_LONG).show()
-                })
-                builder.show()
+        builder.setPositiveButton("OK", DialogInterface.OnClickListener { dialog, which ->
+            with (sharedPref.edit()) {
+                putString("user_id", input.text.toString())
+                apply()
             }
-        }
+            Toast.makeText(context, "user_id = ${sharedPref.getString("user_id", "000").toString()}", Toast.LENGTH_LONG).show()
+        })
+        builder.show()
     }
 }
 
