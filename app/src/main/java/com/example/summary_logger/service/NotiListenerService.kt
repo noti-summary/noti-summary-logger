@@ -5,20 +5,17 @@ import android.os.IBinder
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
+import com.example.summary_logger.util.TAG
 
 class NotiListenerService : NotificationListenerService() {
-
-//    override fun onBind(intent: Intent): IBinder {
-//        TODO("Return the communication channel to the service.")
-//    }
     override fun onCreate() {
         super.onCreate()
-        Log.d("NotiListenerService", "onCreate")
+        Log.d(TAG, "onCreate")
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d("NotiListenerService", "onDestroy")
+        Log.d(TAG, "onDestroy")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -30,21 +27,20 @@ class NotiListenerService : NotificationListenerService() {
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
-        Log.d("NotiListenerService", "onNotificationPosted")
+        Log.d(TAG, "onNotificationPosted")
 
         if (sbn?.isOngoing == true) {
-            Log.d("NotiListenerService", "posted ongoing noti")
+            Log.d(TAG, "posted ongoing noti")
             return
         }
 
         try {
             val userId = "000"
-            val notificationId: String = userId + System.currentTimeMillis().toString()
+            val notificationId: String = userId + "_" + System.currentTimeMillis().toString()
             val notiItem = NotiItem(sbn, userId, notificationId)
-            notiItem.printProperty()
-            Log.d("NotiListenerService", "${sbn?.postTime}")
-            Log.d("NotiListenerService", "${notiItem.title}")
-            TODO("double noti in Messenger")
+            notiItem.logProperty()
+//            notiItem.upload()
+//            TODO("double noti in Messenger")
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -56,6 +52,6 @@ class NotiListenerService : NotificationListenerService() {
         reason: Int
     ) {
 //        super.onNotificationRemoved(sbn, rankingMap, reason)
-        Log.d("NotiListenerService", "onNotificationRemoved")
+        Log.d(TAG, "onNotificationRemoved, Remove reason: $reason")
     }
 }
