@@ -8,6 +8,7 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,16 +21,41 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.LifecycleOwner
 import com.example.summary_logger.R
+import com.example.summary_logger.database.firestore.FirestoreCollection
+import com.example.summary_logger.database.firestore.collectionStateOf
+import com.example.summary_logger.model.Summary
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.ktx.toObject
+import com.google.firebase.ktx.Firebase
 
 @Composable
-fun QuestionnaireURL(urls: List<String>){
+fun ShowQuestionnaireURL(lifecycleOwner: LifecycleOwner){
+    val query = Firebase.firestore.collection("summary").orderBy("summary_id", Query.Direction.DESCENDING)
+    val (result) = remember { collectionStateOf(query, lifecycleOwner) }
+
+    if (result is FirestoreCollection.Snapshot) {
+//        Log.i("firestore", result.list.get(0).toObject<Summary>().toString())
+        QuestionnaireURL(result.list)
+    }
+}
+
+
+@Composable
+fun QuestionnaireURL(urls: List<DocumentSnapshot>){
 
     val uriHandler = LocalUriHandler.current
 
     LazyColumn(modifier = Modifier.fillMaxHeight()) {
 
-        items(urls){ item ->
+        items(urls){ documentSnapshot  ->
+
+            val summaryId : String = documentSnapshot.toObject<Summary>()?.summary_id ?: ""
+            val userId : String = documentSnapshot.toObject<Summary>()?.user_id ?: ""
+            val item  = "https://noti-summary.vercel.app/$userId/$summaryId"
 
             val annotatedLinkString: AnnotatedString = buildAnnotatedString {
                 val startIndex = 0

@@ -8,7 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.summary_logger.jetpack_compose.QuestionnaireURL
+import com.example.summary_logger.jetpack_compose.ShowQuestionnaireURL
 import com.example.summary_logger.ui.theme.SummaryloggerTheme
 import com.example.summary_logger.jetpack_compose.UserIdAlertDialog
 
@@ -21,13 +21,13 @@ class MainActivity : ComponentActivity() {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
 //                    Greeting("Android")
                     UserIdAlertDialog(this)
-                    QuestionnaireURL(listOf("https://github.com/james5418", "https://github.com/noti-summary", "https://example.com"))
+
+                    ShowQuestionnaireURL(this)
                 }
             }
         }
 
     }
-
 }
 
 

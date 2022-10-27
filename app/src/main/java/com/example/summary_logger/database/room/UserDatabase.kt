@@ -1,4 +1,4 @@
-package com.example.summary_logger.database
+package com.example.summary_logger.database.room
 
 import android.content.Context
 import androidx.room.Database

@@ -1,4 +1,4 @@
-package com.example.summary_logger.database
+package com.example.summary_logger.database.room
 
 import androidx.room.*
 import com.example.summary_logger.model.User
