@@ -111,12 +111,6 @@ fun UserIdAlertDialog(context: Context) {
                                     "user_id = ${sharedPref.getString("user_id", "000").toString()}",
                                     Toast.LENGTH_LONG
                                 ).show()
-
-                                // force QuestionnaireURL to recompose
-                                val data = hashMapOf("user_id" to "000", "summary_id" to "123", "summary" to "")
-                                val db = Firebase.firestore
-                                db.collection("summary").document("recompose").set(data)
-                                db.collection("summary").document("recompose").delete()
                             }
                         }
                     )

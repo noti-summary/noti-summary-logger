@@ -38,11 +38,11 @@ fun ShowQuestionnaireURL(context: Context, lifecycleOwner: LifecycleOwner){
     val sharedPref = context.getSharedPreferences("user_id", Context.MODE_PRIVATE)
     val currentUserId = sharedPref.getString("user_id", "000").toString()
 
-    val query = Firebase.firestore.collection("summary").orderBy("summary_id", Query.Direction.DESCENDING)
+    val query = Firebase.firestore.collection("summary").whereEqualTo("summary", "")
     val (result) = remember { collectionStateOf(query, lifecycleOwner) }
 
     if (result is FirestoreCollection.Snapshot) {
-        QuestionnaireURL(result.list, currentUserId)
+        QuestionnaireURL(result.list.reversed(), currentUserId)
     }
 }
 
@@ -55,7 +55,6 @@ fun QuestionnaireURL(docs: List<DocumentSnapshot>, currentUserId: String){
     LazyColumn(modifier = Modifier.fillMaxHeight()) {
 
         items(docs) { documentSnapshot ->
-            val summaryText: String = documentSnapshot.toObject<Summary>()?.summary ?: ""
             val summaryId: String = documentSnapshot.toObject<Summary>()?.summary_id ?: ""
             val userId: String = documentSnapshot.toObject<Summary>()?.user_id ?: ""
             val url = "https://noti-summary.vercel.app/$userId/$summaryId"
@@ -79,7 +78,7 @@ fun QuestionnaireURL(docs: List<DocumentSnapshot>, currentUserId: String){
                 )
             }
 
-            if (userId == currentUserId && summaryText == ""){
+            if (userId == currentUserId){
                 Card(
                     modifier = Modifier.padding(3.dp).fillMaxWidth().wrapContentHeight(),
                     shape = MaterialTheme.shapes.medium,
