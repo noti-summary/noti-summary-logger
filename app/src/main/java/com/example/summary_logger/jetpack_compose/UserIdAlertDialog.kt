@@ -13,6 +13,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.summary_logger.R
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 
 @Composable
@@ -109,6 +111,12 @@ fun UserIdAlertDialog(context: Context) {
                                     "user_id = ${sharedPref.getString("user_id", "000").toString()}",
                                     Toast.LENGTH_LONG
                                 ).show()
+
+                                // force QuestionnaireURL to recompose
+                                val data = hashMapOf("user_id" to "000", "summary_id" to "123", "summary" to "")
+                                val db = Firebase.firestore
+                                db.collection("summary").document("recompose").set(data)
+                                db.collection("summary").document("recompose").delete()
                             }
                         }
                     )

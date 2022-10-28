@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
 //                    Greeting("Android")
                     UserIdAlertDialog(this)
 
-                    ShowQuestionnaireURL(this)
+                    ShowQuestionnaireURL(this, this)
                 }
             }
         }
