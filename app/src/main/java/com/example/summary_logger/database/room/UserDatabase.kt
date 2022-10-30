@@ -28,7 +28,7 @@ abstract class UserDatabase : RoomDatabase() {
                     override fun onCreate(db: SupportSQLiteDatabase) {
                         super.onCreate(db)
                         ioThread {
-                            getInstance(context).userDao().setUser(User(user_id="000"))
+                            getInstance(context).userDao().setUser(User(userId="000"))
                         }
                     }
                 })

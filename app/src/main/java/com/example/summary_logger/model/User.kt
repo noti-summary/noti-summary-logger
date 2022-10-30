@@ -6,6 +6,6 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "user_table")
 data class User(
     @PrimaryKey
-    var primary_key: Int = 1,
-    var user_id: String
+    var primaryKey: Int = 1,
+    var userId: String
 )

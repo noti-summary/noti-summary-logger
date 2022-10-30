@@ -8,7 +8,7 @@ interface UserDao {
     @Query("SELECT * FROM user_table")
     fun getAllUser(): List<User>
 
-    @Query("SELECT user_id FROM user_table WHERE primary_key=1")
+    @Query("SELECT userId FROM user_table WHERE primaryKey=1")
     fun getCurrentUserId(): String  // current user's primary_key = 1 (default)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

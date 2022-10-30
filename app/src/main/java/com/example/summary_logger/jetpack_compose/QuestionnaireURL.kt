@@ -28,7 +28,6 @@ import com.example.summary_logger.database.firestore.FirestoreCollection
 import com.example.summary_logger.database.firestore.collectionStateOf
 import com.example.summary_logger.model.Summary
 import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
@@ -55,8 +54,8 @@ fun QuestionnaireURL(docs: List<DocumentSnapshot>, currentUserId: String){
     LazyColumn(modifier = Modifier.fillMaxHeight()) {
 
         items(docs) { documentSnapshot ->
-            val summaryId: String = documentSnapshot.toObject<Summary>()?.summary_id ?: ""
-            val userId: String = documentSnapshot.toObject<Summary>()?.user_id ?: ""
+            val summaryId: String = documentSnapshot.toObject<Summary>()?.summaryId ?: ""
+            val userId: String = documentSnapshot.toObject<Summary>()?.userId ?: ""
             val url = "https://noti-summary.vercel.app/$userId/$summaryId"
 
             val annotatedLinkString: AnnotatedString = buildAnnotatedString {

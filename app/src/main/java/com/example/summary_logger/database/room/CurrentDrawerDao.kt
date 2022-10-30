@@ -6,13 +6,13 @@ import com.example.summary_logger.model.CurrentDrawer
 @Dao
 interface CurrentDrawerDao {
 
-    @Query("SELECT notification_id FROM current_drawer_table")
+    @Query("SELECT notificationId FROM current_drawer_table")
     fun getAll(): List<String>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(currentDrawer: CurrentDrawer)
 
-    @Query("DELETE FROM current_drawer_table WHERE notification_id = :id")
+    @Query("DELETE FROM current_drawer_table WHERE notificationId = :id")
     fun deleteById(id: String)
 
     @Query("DELETE FROM current_drawer_table")
