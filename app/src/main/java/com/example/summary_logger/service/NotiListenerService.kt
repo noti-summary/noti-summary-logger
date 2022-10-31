@@ -35,9 +35,9 @@ class NotiListenerService : NotificationListenerService() {
         }
 
         try {
-            val userId = "000"
+            val userId = "000" // TODO("get userId from sharePreference")
             val notificationId: String = userId + "_" + System.currentTimeMillis().toString()
-            val notiItem = NotiItem(sbn, userId, notificationId)
+            val notiItem = NotiItem(this, sbn, userId, notificationId)
             notiItem.logProperty()
 //            notiItem.upload()
 //            TODO("double noti in Messenger")
