@@ -86,11 +86,10 @@ class NotiItem(context:Context,
         val noti = hashMapOf(
             "userId" to this.userId,
             "notificationId" to this.notificationId,
-            "unixTime" to this.postTime,
             "postTime" to this.postTime,
             "appName" to this.appName,
             "title" to this.title,
-            "content" to this.title,
+            "content" to this.content,
             "category" to this.category
         )
 
