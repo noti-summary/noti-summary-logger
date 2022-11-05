@@ -6,13 +6,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.summary_logger.jetpack_compose.QRCodeScanner
 import com.example.summary_logger.jetpack_compose.ShowQuestionnaireURL
+import com.example.summary_logger.jetpack_compose.UserIdAlertDialog
 import com.example.summary_logger.service.ContextListenerService
 import com.example.summary_logger.ui.theme.SummaryloggerTheme
-import com.example.summary_logger.jetpack_compose.UserIdAlertDialog
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,6 +25,8 @@ class MainActivity : ComponentActivity() {
                     UserIdAlertDialog(this)
 
                     ShowQuestionnaireURL(this, this)
+
+                    QRCodeScanner(this)
                 }
             }
         }
