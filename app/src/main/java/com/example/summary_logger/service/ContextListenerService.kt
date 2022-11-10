@@ -27,7 +27,7 @@ import androidx.core.app.ActivityCompat
 import java.util.*
 import kotlin.concurrent.timerTask
 import kotlin.reflect.full.memberProperties
-
+import com.example.summary_logger.model.Contexts
 
 class ContextListenerService : Service() {
 
@@ -60,83 +60,27 @@ class ContextListenerService : Service() {
         public var latestContext: Contexts = Contexts()
     }
 
-    class Contexts {
+    private fun log(context: Contexts): String {
 
-        var ringerMode: String = "Unknown"
-            set(value) {
-                if (field != value)
-                    Log.d("Context", "Ringer Mode Change")
-                field = value
-            }
+        val specs: MutableList<String> = arrayListOf()
+        for (property in Contexts::class.memberProperties) {
+            val field: String = property.name
+            val value: String = property.get(context).toString()
+            if (field == "usageStats")
+                specs.add("$field: $value;")
+        }
 
-        var batteryLevel: Int = -1
-        var batteryCharging: Boolean = false
-            set(value) {
-                if (field != value)
-                    Log.d("Context", "Battery Charge Status Change")
-                field = value
-            }
-
-        var isDeviceIdle: Boolean = false
-            set(value) {
-                if (field != value)
-                    Log.d("Context", "Idle Status Change")
-                field = value
-            }
-
-        var isInteractive: Boolean = false
-            set(value) {
-                if (field != value)
-                    Log.d("Context", "Interactive Status Change")
-                field = value
-            }
-        var isPowerSave: Boolean = false
-            set(value) {
-                if (field != value)
-                    Log.d("Context", "Power Saving Status Change")
-                field = value
-            }
-
-        var callState: String = "Idle"
-            set(value) {
-                if (field != value)
-                    Log.d("Context", "Call State Change")
-                field = value
-            }
-
-        var usageStats: String = "Unknown"
-        var light: Float = 0F
-
-        var longitude: Double = 0.0
-        var latitude: Double = 0.0
-
-        var network: String = "Unknown"
-            set(value) {
-                if (field != value)
-                    Log.d("Context", "Network Type Change")
-                field = value
-            }
-
-        fun log(): String {
-
-            val specs: MutableList<String> = arrayListOf()
-            for (property in Contexts::class.memberProperties) {
-                val field: String = property.name
-                val value: String = property.get(this).toString()
-                if (field == "usageStats")
-                    specs.add("$field: $value;")
-            }
-
-            return buildString {
-                for (spec in specs) {
-                    append(spec)
-                }
+        return buildString {
+            for (spec in specs) {
+                append(spec)
             }
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
     private fun fetchContext() {
+
+        latestContext.time = System.currentTimeMillis()
 
         latestContext.ringerMode = when(audioManager.ringerMode) {
             AudioManager.RINGER_MODE_SILENT -> "Silent"
@@ -147,15 +91,22 @@ class ContextListenerService : Service() {
 
         latestContext.batteryLevel = batteryManager.getIntProperty(
             BatteryManager.BATTERY_PROPERTY_CAPACITY)
+        if (latestContext.batteryCharging != batteryManager.isCharging)
+            Log.d("Context", "Battery Charge State Changed")
         latestContext.batteryCharging = batteryManager.isCharging
 
+
+        if (latestContext.isDeviceIdle != powerManager.isDeviceIdleMode)
+            Log.d("Context", "Device Idle State Changed")
         latestContext.isDeviceIdle = powerManager.isDeviceIdleMode
+        if (latestContext.isInteractive != powerManager.isInteractive)
+            Log.d("Context", "Device Interactive State Changed")
         latestContext.isInteractive = powerManager.isInteractive
         latestContext.isPowerSave = powerManager.isPowerSaveMode
 
         val recentApp = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_BEST,
             System.currentTimeMillis() - pullInterval, System.currentTimeMillis())
-        latestContext.usageStats = buildString {
+        val usageStats = buildString {
             for (u in recentApp) {
                 if (u.lastTimeUsed == 0L)
                     continue
@@ -164,16 +115,17 @@ class ContextListenerService : Service() {
                 append("$packageName: $lastTimeUsed;")
             }
         }
+        if (latestContext.usageStats != usageStats)
+            Log.d("Context", "Device Interactive State Changed")
+        latestContext.usageStats = usageStats
 
         var gpsLoc: Location? = null; var netLoc: Location? = null; val loc: Location
         val gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
         val netEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
         if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
+                this, Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
+                this, Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             latestContext.longitude = -1.0; latestContext.latitude = -1.0
@@ -190,7 +142,7 @@ class ContextListenerService : Service() {
                 netLoc!!
             latestContext.longitude = loc.longitude; latestContext.latitude = loc.latitude
         }
-        Log.d("Context", latestContext.log())
+        Log.d("Context", log(latestContext))
 
         val network = connectivityManager.activeNetwork
         val activeNetwork: NetworkCapabilities? = connectivityManager.getNetworkCapabilities(network)
@@ -224,12 +176,15 @@ class ContextListenerService : Service() {
                 mainExecutor,
                 object : TelephonyCallback(), TelephonyCallback.CallStateListener {
                     override fun onCallStateChanged(state: Int) {
-                        latestContext.callState = when(state) {
+                        val callState = when(state) {
                             TelephonyManager.CALL_STATE_IDLE -> "Idle"
                             TelephonyManager.CALL_STATE_OFFHOOK -> "Off-hook"
                             TelephonyManager.CALL_STATE_RINGING -> "Ringing"
                             else -> "ERROR"
                         }
+                        if (latestContext.callState != callState)
+                            Log.d("Context", "Call State Changed")
+                        latestContext.callState = callState
                     }
                 })
         }
@@ -237,9 +192,8 @@ class ContextListenerService : Service() {
         val sensorListener = object:SensorEventListener {
             override fun onAccuracyChanged(p0: Sensor?, p1: Int) {}
             override fun onSensorChanged(event: SensorEvent?) {
-                if(event != null) {
+                if(event != null)
                     latestContext.light = event.values[0]
-                }
             }
         }
 
