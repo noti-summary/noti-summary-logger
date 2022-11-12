@@ -18,6 +18,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Summarylogger"
         tools:targetApi="31">
+
         <service
             android:name=".service.NotiListenerService"
             android:enabled="true"
@@ -26,12 +27,16 @@
         <service
             android:name=".service.ContextListenerService"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="true"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+        </service>
 
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.Summarylogger">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

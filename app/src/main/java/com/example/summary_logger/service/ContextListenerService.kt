@@ -27,7 +27,8 @@ import androidx.core.app.ActivityCompat
 import java.util.*
 import kotlin.concurrent.timerTask
 import kotlin.reflect.full.memberProperties
-import com.example.summary_logger.model.Contexts
+import com.example.summary_logger.model.ActiveContext
+import com.example.summary_logger.model.PeriodicContext
 
 class ContextListenerService : Service() {
 
@@ -40,7 +41,8 @@ class ContextListenerService : Service() {
     private lateinit var telephonyManager: TelephonyManager
     private lateinit var usageStatsManager: UsageStatsManager
 
-    private val pullInterval: Long = 1000
+    private val pullActiveInterval: Long = 1000
+    private val pullPeriodicInterval: Long = 60000
 
     override fun onCreate() {
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -57,55 +59,65 @@ class ContextListenerService : Service() {
     }
 
     companion object {
-        public var latestContext: Contexts = Contexts()
+        public var latestPeriodicContext: PeriodicContext = PeriodicContext()
+        public var latestActiveContext: ActiveContext = ActiveContext()
     }
 
-    private fun log(context: Contexts): String {
+    private fun log(activeContext: ActiveContext, periodicContext: PeriodicContext) {
 
-        val specs: MutableList<String> = arrayListOf()
-        for (property in Contexts::class.memberProperties) {
+        val activeSpecs: MutableList<String> = arrayListOf()
+        for (property in ActiveContext::class.memberProperties) {
             val field: String = property.name
-            val value: String = property.get(context).toString()
-            if (field == "usageStats")
-                specs.add("$field: $value;")
+            val value: String = property.get(activeContext).toString()
+            activeSpecs.add("$field: $value;")
         }
 
-        return buildString {
-            for (spec in specs) {
-                append(spec)
-            }
+        val periodicSpecs: MutableList<String> = arrayListOf()
+        for (property in PeriodicContext::class.memberProperties) {
+            val field: String = property.name
+            val value: String = property.get(periodicContext).toString()
+            periodicSpecs.add("$field: $value;")
         }
+
+        val logString = buildString {
+            append("ActiveContext\n")
+            for (spec in activeSpecs)
+                append("$spec\n")
+            append("\n")
+            append("PeriodicContext\n")
+            for (spec in periodicSpecs)
+                append("$spec\n")
+        }
+        Log.d("Context", logString)
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
-    private fun fetchContext() {
+    private fun fetchActiveContext() {
 
-        latestContext.time = System.currentTimeMillis()
+        latestActiveContext.time = System.currentTimeMillis()
 
-        latestContext.ringerMode = when(audioManager.ringerMode) {
+        latestActiveContext.ringerMode = when(audioManager.ringerMode) {
             AudioManager.RINGER_MODE_SILENT -> "Silent"
             AudioManager.RINGER_MODE_VIBRATE -> "Vibrate"
             AudioManager.RINGER_MODE_NORMAL -> "Normal"
             else -> "ERROR"
         }
 
-        latestContext.batteryLevel = batteryManager.getIntProperty(
-            BatteryManager.BATTERY_PROPERTY_CAPACITY)
-        if (latestContext.batteryCharging != batteryManager.isCharging)
+        if (latestActiveContext.batteryCharging != batteryManager.isCharging)
             Log.d("Context", "Battery Charge State Changed")
-        latestContext.batteryCharging = batteryManager.isCharging
+        latestActiveContext.batteryCharging = batteryManager.isCharging
 
-
-        if (latestContext.isDeviceIdle != powerManager.isDeviceIdleMode)
+        if (latestActiveContext.isDeviceIdle != powerManager.isDeviceIdleMode)
             Log.d("Context", "Device Idle State Changed")
-        latestContext.isDeviceIdle = powerManager.isDeviceIdleMode
-        if (latestContext.isInteractive != powerManager.isInteractive)
+        latestActiveContext.isDeviceIdle = powerManager.isDeviceIdleMode
+        if (latestActiveContext.isInteractive != powerManager.isInteractive)
             Log.d("Context", "Device Interactive State Changed")
-        latestContext.isInteractive = powerManager.isInteractive
-        latestContext.isPowerSave = powerManager.isPowerSaveMode
+        latestActiveContext.isInteractive = powerManager.isInteractive
+        latestActiveContext.isPowerSave = powerManager.isPowerSaveMode
 
+        val currentTime = System.currentTimeMillis();
         val recentApp = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_BEST,
-            System.currentTimeMillis() - pullInterval, System.currentTimeMillis())
+            currentTime - pullActiveInterval, currentTime)
         val usageStats = buildString {
             for (u in recentApp) {
                 if (u.lastTimeUsed == 0L)
@@ -115,9 +127,18 @@ class ContextListenerService : Service() {
                 append("$packageName: $lastTimeUsed;")
             }
         }
-        if (latestContext.usageStats != usageStats)
+        if (latestActiveContext.usageStats != usageStats)
             Log.d("Context", "Device Interactive State Changed")
-        latestContext.usageStats = usageStats
+        latestActiveContext.usageStats = usageStats
+    }
+
+    @RequiresApi(Build.VERSION_CODES.P)
+    private fun fetchPeriodicContext() {
+
+        latestPeriodicContext.time = System.currentTimeMillis()
+
+        latestPeriodicContext.batteryLevel = batteryManager.getIntProperty(
+            BatteryManager.BATTERY_PROPERTY_CAPACITY)
 
         var gpsLoc: Location? = null; var netLoc: Location? = null; val loc: Location
         val gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
@@ -128,7 +149,7 @@ class ContextListenerService : Service() {
                 this, Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            latestContext.longitude = -1.0; latestContext.latitude = -1.0
+            latestPeriodicContext.longitude = -1.0; latestPeriodicContext.latitude = -1.0
         } else {
             if (gpsEnabled)
                 gpsLoc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)!!
@@ -140,14 +161,13 @@ class ContextListenerService : Service() {
                 gpsLoc!!
             else
                 netLoc!!
-            latestContext.longitude = loc.longitude; latestContext.latitude = loc.latitude
+            latestPeriodicContext.longitude = loc.longitude; latestPeriodicContext.latitude = loc.latitude
         }
-        Log.d("Context", log(latestContext))
 
         val network = connectivityManager.activeNetwork
         val activeNetwork: NetworkCapabilities? = connectivityManager.getNetworkCapabilities(network)
 
-        latestContext.network =  if (activeNetwork == null || network == null) {
+        latestPeriodicContext.network =  if (activeNetwork == null || network == null) {
             "Disconnected"
         } else if (activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
             "Cellular"
@@ -168,8 +188,16 @@ class ContextListenerService : Service() {
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Timer().scheduleAtFixedRate(timerTask {
-            fetchContext()
-        }, 0, pullInterval)
+            fetchActiveContext()
+        }, 0, pullActiveInterval)
+
+        Timer().scheduleAtFixedRate(timerTask {
+            fetchPeriodicContext()
+        }, 0, pullPeriodicInterval)
+
+        Timer().scheduleAtFixedRate(timerTask {
+            // log(latestActiveContext, latestPeriodicContext)
+        }, 0, 10000)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             telephonyManager.registerTelephonyCallback(
@@ -182,9 +210,9 @@ class ContextListenerService : Service() {
                             TelephonyManager.CALL_STATE_RINGING -> "Ringing"
                             else -> "ERROR"
                         }
-                        if (latestContext.callState != callState)
+                        if (latestActiveContext.callState != callState)
                             Log.d("Context", "Call State Changed")
-                        latestContext.callState = callState
+                        latestActiveContext.callState = callState
                     }
                 })
         }
@@ -193,7 +221,7 @@ class ContextListenerService : Service() {
             override fun onAccuracyChanged(p0: Sensor?, p1: Int) {}
             override fun onSensorChanged(event: SensorEvent?) {
                 if(event != null)
-                    latestContext.light = event.values[0]
+                    latestPeriodicContext.light = event.values[0]
             }
         }
 
