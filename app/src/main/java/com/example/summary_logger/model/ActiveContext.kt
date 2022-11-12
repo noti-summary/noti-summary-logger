@@ -5,15 +5,15 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "active_context_table")
 data class ActiveContext (
-    @PrimaryKey
-    var activeContextId: Int = 1,
+    @PrimaryKey(autoGenerate = true)
+    var activeContextId: Int = 0,
 
     var time: Long = System.currentTimeMillis(),
     var ringerMode: String = "Unknown",
-    var batteryCharging: Boolean = false,
+    var batteryCharging: Boolean = false, // TODO To be tested
     var isDeviceIdle: Boolean = false,
     var isInteractive: Boolean = false,
     var isPowerSave: Boolean = false,
-    var callState: String = "Idle",
+    var callState: String = "Idle", // TODO To be tested
     var usageStats: String = "Unknown",
 )

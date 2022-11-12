@@ -5,8 +5,8 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "periodic_context_table")
 data class PeriodicContext (
-    @PrimaryKey
-    var periodicContextId: Int = 1,
+    @PrimaryKey(autoGenerate = true)
+    var periodicContextId: Int = 0,
 
     var time: Long = System.currentTimeMillis(),
     var batteryLevel: Int = -1,
