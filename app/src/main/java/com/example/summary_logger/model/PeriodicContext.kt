@@ -3,10 +3,10 @@ package com.example.summary_logger.model
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "context_table")
+@Entity(tableName = "periodic_context_table")
 data class PeriodicContext (
     @PrimaryKey
-    var primaryKey: Int = 1,
+    var periodicContextId: Int = 1,
 
     var time: Long = System.currentTimeMillis(),
     var batteryLevel: Int = -1,

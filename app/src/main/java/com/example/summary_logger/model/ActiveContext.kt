@@ -3,10 +3,10 @@ package com.example.summary_logger.model
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "context_table")
+@Entity(tableName = "active_context_table")
 data class ActiveContext (
     @PrimaryKey
-    var primaryKey: Int = 1,
+    var activeContextId: Int = 1,
 
     var time: Long = System.currentTimeMillis(),
     var ringerMode: String = "Unknown",
