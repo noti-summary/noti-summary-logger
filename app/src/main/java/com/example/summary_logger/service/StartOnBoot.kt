@@ -2,14 +2,14 @@ package com.example.summary_logger.service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.util.Log
-
+import com.example.summary_logger.MainActivity
 
 class StartOnBoot : BroadcastReceiver() {
-
     override fun onReceive(context: Context?, intent: Intent?) {
-        Log.d("Receiver", "Received")
-        val startIntent = Intent(context, ContextListenerService::class.java)
-        context!!.startService(startIntent)
+        if (Intent.ACTION_BOOT_COMPLETED == intent!!.action) {
+            val startIntent = Intent(context, MainActivity::class.java)
+            startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context!!.startActivity(startIntent)
+        }
     }
 }
