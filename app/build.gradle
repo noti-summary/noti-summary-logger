@@ -75,4 +75,8 @@ dependencies {
     kapt "androidx.room:room-compiler:$room_version"
 
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
+
+    implementation 'com.squareup.okhttp3:okhttp:4.10.0'
+
+    implementation 'io.github.cdimascio:dotenv-kotlin:6.3.1'
 }
