@@ -31,6 +31,7 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
+import io.github.cdimascio.dotenv.dotenv
 
 @Composable
 fun ShowQuestionnaireURL(context: Context, lifecycleOwner: LifecycleOwner){
@@ -49,6 +50,11 @@ fun ShowQuestionnaireURL(context: Context, lifecycleOwner: LifecycleOwner){
 @Composable
 fun QuestionnaireURL(docs: List<DocumentSnapshot>, currentUserId: String){
 
+    val dotenv = dotenv {
+        directory = "./assets"
+        filename = "env"
+    }
+    val vercel = dotenv["VERCEL"] ?: "http://localhost:3000"
     val uriHandler = LocalUriHandler.current
 
     LazyColumn(modifier = Modifier.fillMaxHeight()) {
@@ -56,7 +62,7 @@ fun QuestionnaireURL(docs: List<DocumentSnapshot>, currentUserId: String){
         items(docs) { documentSnapshot ->
             val summaryId: String = documentSnapshot.toObject<Summary>()?.summaryId ?: ""
             val userId: String = documentSnapshot.toObject<Summary>()?.userId ?: ""
-            val url = "https://noti-summary.vercel.app/$userId/$summaryId"
+            val url = "$vercel/$userId/$summaryId"
 
             val annotatedLinkString: AnnotatedString = buildAnnotatedString {
                 val startIndex = 0

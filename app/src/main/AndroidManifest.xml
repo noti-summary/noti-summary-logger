@@ -15,7 +15,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Summarylogger"
         tools:targetApi="31"
-        android:hardwareAccelerated="true">
+        android:hardwareAccelerated="true"
+        android:usesCleartextTraffic="true">
         <service
             android:name=".service.NotiListenerService"
             android:enabled="true"

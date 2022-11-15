@@ -1,6 +1,7 @@
 package com.example.summary_logger.jetpack_compose
 
 import android.content.Context
+import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -33,7 +34,6 @@ fun QRCodeScanner(context: Context){
         if (result.contents != null) {
             val sharedPref = context.getSharedPreferences("user_id", Context.MODE_PRIVATE)
             val currentUserId = sharedPref.getString("user_id", "000").toString()
-//            Toast.makeText(context, "user id: $currentUserId, Scanned: ${result.contents}", Toast.LENGTH_LONG).show()
 
             loginToWeb(currentUserId, result.contents, context)
         }
@@ -47,7 +47,7 @@ fun QRCodeScanner(context: Context){
         FloatingActionButton(
             onClick = {
                 val options = ScanOptions()
-                options.setPrompt("—— QR Codes ——")
+                options.setPrompt("—— QR Codes ——\n")
                 options.setBeepEnabled(false)
                 options.setOrientationLocked(true)
                 barcodeLauncher.launch(options)
@@ -60,13 +60,18 @@ fun QRCodeScanner(context: Context){
 
 
 fun loginToWeb(currentUserId: String, accessToken: String, context: Context){
-    val dotenv = dotenv()
-    val SERVER_IP = dotenv["SERVER"] ?: "http://localhost:5000"
+    val dotenv = dotenv {
+        directory = "./assets"
+        filename = "env"
+    }
+    val serverIP = dotenv["SERVER"] ?: "http://10.44.171.50:5000"
+
+    val token = "\"" + accessToken + "\""
 
     val client = OkHttpClient()
     val request = Request.Builder()
-        .url("$SERVER_IP/login/$currentUserId")
-        .post(accessToken.toRequestBody())
+        .url("$serverIP/login/$currentUserId")
+        .post(token.toRequestBody())
         .build()
 
     client.newCall(request).enqueue(object : Callback {
@@ -77,10 +82,14 @@ fun loginToWeb(currentUserId: String, accessToken: String, context: Context){
         override fun onResponse(call: Call, response: Response) {
             val res = response.body?.string()
             if(res == "true"){
+                Looper.prepare()
                 Toast.makeText(context, "登入成功", Toast.LENGTH_LONG).show()
+                Looper.loop()
             }
             else{
+                Looper.prepare()
                 Toast.makeText(context, "登入失敗 請稍後再試", Toast.LENGTH_LONG).show()
+                Looper.loop()
             }
         }
     })
