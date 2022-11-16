@@ -54,7 +54,7 @@ fun QuestionnaireURL(docs: List<DocumentSnapshot>, currentUserId: String){
         directory = "./assets"
         filename = "env"
     }
-    val vercel = dotenv["VERCEL"] ?: "http://localhost:3000"
+    val vercel = dotenv["VERCEL"]
     val uriHandler = LocalUriHandler.current
 
     LazyColumn(modifier = Modifier.fillMaxHeight()) {

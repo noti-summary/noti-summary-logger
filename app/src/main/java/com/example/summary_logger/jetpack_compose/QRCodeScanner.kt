@@ -64,7 +64,7 @@ fun loginToWeb(currentUserId: String, accessToken: String, context: Context){
         directory = "./assets"
         filename = "env"
     }
-    val serverIP = dotenv["SERVER"] ?: "http://10.44.171.50:5000"
+    val serverIP = dotenv["SERVER"]
 
     val token = "\"" + accessToken + "\""
 
