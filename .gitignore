@@ -87,3 +87,5 @@ lint/tmp/
 
 # MacOS
 *.DS_Store
+
+env
