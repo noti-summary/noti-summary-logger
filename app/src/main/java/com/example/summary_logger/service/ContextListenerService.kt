@@ -31,6 +31,7 @@ import com.example.summary_logger.model.PeriodicContext
 import java.util.*
 import kotlin.concurrent.timerTask
 import kotlin.reflect.full.memberProperties
+import com.example.summary_logger.util.TAG
 
 class ContextListenerService : Service() {
 
@@ -49,8 +50,6 @@ class ContextListenerService : Service() {
     private var latestPeriodicContext: PeriodicContext = PeriodicContext()
     private var latestActiveContext: ActiveContext = ActiveContext()
 
-    private val TAG = "ContextListenerService"
-
     override fun onCreate() {
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         batteryManager = getSystemService(Context.BATTERY_SERVICE) as BatteryManager
@@ -62,7 +61,7 @@ class ContextListenerService : Service() {
         }
         telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        println("CLS onCreate!")
+        Log.d(TAG, "CLS onCreate!")
     }
 
     // Public for potential external usage
