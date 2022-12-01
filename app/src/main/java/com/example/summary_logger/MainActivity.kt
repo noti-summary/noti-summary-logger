@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import com.example.summary_logger.service.NotiListenerService
 import com.example.summary_logger.util.channelId
@@ -23,10 +24,14 @@ import com.example.summary_logger.jetpack_compose.ShowQuestionnaireURL
 import com.example.summary_logger.service.ContextListenerService
 import com.example.summary_logger.ui.theme.SummaryloggerTheme
 import com.example.summary_logger.jetpack_compose.UserIdAlertDialog
+import com.example.summary_logger.util.upload
+import java.util.*
+import kotlin.concurrent.timerTask
 
 class MainActivity : ComponentActivity() {
     private lateinit var notificationManager: NotificationManager
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -48,6 +53,9 @@ class MainActivity : ComponentActivity() {
 //                Box {
 //                    NotiButton(this@MainActivity)
 //                }
+                Box {
+                    UploadButton(this@MainActivity)
+                }
             }
         }
         
@@ -66,6 +74,7 @@ class MainActivity : ComponentActivity() {
             this.notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             this.notificationManager.createNotificationChannel(channel)
         }
+
     }
 
     private fun isNotiListenerEnabled(): Boolean {
@@ -96,5 +105,16 @@ fun NotiButton(context: Context) {
         pushNoti("TitleTitle", "ContentContent", context)
     }) {
         Text(text = "Send the Notification")
+    }
+}
+
+@Composable
+fun UploadButton(context: Context) {
+    Button(onClick = {
+        val endTime = System.currentTimeMillis()
+        val startTime = endTime - 60000
+        upload(context, startTime, endTime)
+    }) {
+        Text(text = "Upload Summary")
     }
 }

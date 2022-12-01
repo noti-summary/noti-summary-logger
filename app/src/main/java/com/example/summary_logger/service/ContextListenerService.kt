@@ -1,6 +1,8 @@
 package com.example.summary_logger.service
 
 import android.Manifest
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.app.Service
 import android.app.usage.UsageStatsManager
 import android.content.Context
@@ -32,6 +34,7 @@ import java.util.*
 import kotlin.concurrent.timerTask
 import kotlin.reflect.full.memberProperties
 import com.example.summary_logger.util.TAG
+import com.example.summary_logger.util.upload
 
 class ContextListenerService : Service() {
 
@@ -289,6 +292,13 @@ class ContextListenerService : Service() {
     }
 
     override fun onDestroy() {
-        Log.d(TAG, "CLS onDestroy")
+        val restartServiceIntent = Intent(applicationContext, ContextListenerService::class.java).also {
+            it.setPackage(packageName)
+        };
+        val restartServicePendingIntent: PendingIntent = PendingIntent.getService(this, 1, restartServiceIntent, PendingIntent.FLAG_ONE_SHOT);
+        applicationContext.getSystemService(Context.ALARM_SERVICE);
+        val alarmService: AlarmManager = applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager;
+        alarmService.set(AlarmManager.ELAPSED_REALTIME, System.currentTimeMillis() + 10000, restartServicePendingIntent);
+        Log.d(TAG, "onDestroy")
     }
 }

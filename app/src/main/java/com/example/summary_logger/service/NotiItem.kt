@@ -1,48 +1,60 @@
 package com.example.summary_logger.service
 
 import android.app.Notification
-import android.app.Notification.EXTRA_TEXT
-import android.app.Notification.EXTRA_TITLE
+import android.app.Notification.*
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.service.notification.StatusBarNotification
 import android.util.Log
+import com.example.summary_logger.model.CurrentDrawer
 import com.example.summary_logger.util.TAG
 import com.google.android.gms.common.wrappers.Wrappers.packageManager
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import java.util.*
+import kotlin.properties.Delegates
 
 class NotiItem(context:Context,
                sbn: StatusBarNotification?,
-               private val userId: String,
-               private val notificationId: String) {
+               private val userId: String) {
 
     private var appName: String? = null
     private var title: String? = null
     private var content: String? = null
     private var category: String? = null
-    private var packageName: String? = null
+    private lateinit var packageName: String
 
     private var notification: Notification? = null
-    private var key: String? = null
+    private lateinit var key: String
     private var unixTime: Long? = null
     private var postTime: String? = null
     private var group: String? = null
+    private var onGoing: Boolean? = null
+
+    private lateinit var notificationId: String
 
     private var sbnId: Int? = null
 
     init {
-        this.title = sbn?.notification?.extras?.getString(EXTRA_TITLE)
-        this.content = sbn?.notification?.extras?.getString(EXTRA_TEXT)
+
+        this.title = sbn?.notification?.extras?.getCharSequence(EXTRA_TITLE).toString()
+
+        this.content = if (sbn?.notification?.extras?.getCharSequence(EXTRA_TEXT).toString().isEmpty()) {
+            sbn?.notification?.extras?.getCharSequence(EXTRA_BIG_TEXT).toString()
+        } else {
+            sbn?.notification?.extras?.getCharSequence(EXTRA_TEXT).toString()
+        }
         this.category = sbn?.notification?.category
-        this.packageName = sbn?.packageName
+        this.packageName = sbn?.packageName.toString()
 
         this.notification = sbn?.notification
-        this.key = sbn?.key
+        this.key = sbn?.key.toString()
         this.unixTime = sbn?.postTime
         this.postTime = sbn?.postTime?.let { Date(it).toString() }
         this.group = sbn?.notification?.group
+        this.onGoing = sbn?.isOngoing
+
+        this.notificationId = "${this.userId}_${this.unixTime}"
 
         this.sbnId = sbn?.id
 
@@ -66,17 +78,17 @@ class NotiItem(context:Context,
 
         Log.d(TAG, "userId=${this.userId}")
         Log.d(TAG, "notificationId=${this.notificationId}")
-        Log.d(TAG, "postTime=${this.postTime}")
+        Log.d(TAG, "postTime=${this.unixTime}")
 
         Log.d(TAG, "appName=${this.appName}")
         Log.d(TAG, "title=${this.title}")
         Log.d(TAG, "content=${this.content}")
         Log.d(TAG, "category=${this.category}")
 
-//        Log.d(TAG, "packageName=${this.packageName}")
-//        Log.d(TAG, "notification=${this.notification}")
-//        Log.d(TAG, "key=${this.key}")
-//        Log.d(TAG, "group=${this.group}")
+        Log.d(TAG, "packageName=${this.packageName}")
+        Log.d(TAG, "notification=${this.notification}")
+        Log.d(TAG, "key=${this.key}")
+        Log.d(TAG, "group=${this.group}")
 
         Log.d(TAG, "############# NotiItem Property End #############")
     }
@@ -103,4 +115,13 @@ class NotiItem(context:Context,
                 Log.w(TAG, "Error adding noti to firestore", e)
             }
     }
+
+    fun isOnGoing(): Boolean? {
+        return onGoing
+    }
+
+    fun makeDrawerNoti(): CurrentDrawer {
+        return CurrentDrawer(0, this.notificationId, this.packageName, this.key)
+    }
+
 }
