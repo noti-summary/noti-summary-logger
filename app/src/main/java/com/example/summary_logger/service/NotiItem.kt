@@ -13,15 +13,16 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import java.util.*
 import kotlin.properties.Delegates
+import kotlin.reflect.jvm.internal.impl.metadata.deserialization.Flags
 
 class NotiItem(context:Context,
                sbn: StatusBarNotification?,
                private val userId: String) {
 
     private var appName: String? = null
-    private var title: String? = null
-    private var content: String? = null
-    private var category: String? = null
+    private var title: String = ""
+    private var content: String = ""
+    private var category: String = ""
     private lateinit var packageName: String
 
     private var notification: Notification? = null
@@ -30,6 +31,8 @@ class NotiItem(context:Context,
     private var postTime: String? = null
     private var group: String? = null
     private var onGoing: Boolean? = null
+    private var flags: Int? = null
+    private lateinit var sortKey: String
 
     private lateinit var notificationId: String
 
@@ -44,7 +47,7 @@ class NotiItem(context:Context,
         } else {
             sbn?.notification?.extras?.getCharSequence(EXTRA_TEXT).toString()
         }
-        this.category = sbn?.notification?.category
+        this.category = sbn?.notification?.category ?: "others"
         this.packageName = sbn?.packageName.toString()
 
         this.notification = sbn?.notification
@@ -52,7 +55,8 @@ class NotiItem(context:Context,
         this.unixTime = sbn?.postTime
         this.postTime = sbn?.postTime?.let { Date(it).toString() }
         this.group = sbn?.notification?.group
-        this.onGoing = sbn?.isOngoing
+        this.flags = sbn?.notification?.flags
+        this.sortKey = sbn?.notification?.sortKey.toString()
 
         this.notificationId = "${this.userId}_${this.unixTime}"
 
@@ -116,12 +120,28 @@ class NotiItem(context:Context,
             }
     }
 
-    fun isOnGoing(): Boolean? {
-        return onGoing
+    fun getFlags(): Int? {
+        return flags
+    }
+
+    fun getPackageName(): String? {
+        return packageName
+    }
+
+    fun getSbnId(): Int? {
+        return sbnId
+    }
+
+    fun getTitle(): String? {
+        return title
+    }
+
+    fun getContent(): String? {
+        return content
     }
 
     fun makeDrawerNoti(): CurrentDrawer {
-        return CurrentDrawer(0, this.notificationId, this.packageName, this.key)
+        return CurrentDrawer(0, this.notificationId, this.packageName, this.key, this.sortKey)
     }
 
 }

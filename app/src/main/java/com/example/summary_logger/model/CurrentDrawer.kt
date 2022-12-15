@@ -10,4 +10,5 @@ data class CurrentDrawer(
     var notificationId: String,
     var packageName: String,
     var groupKey: String,
+    var sortKey: String,
 )

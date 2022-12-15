@@ -15,11 +15,14 @@ interface CurrentDrawerDao {
     @Query("DELETE FROM current_drawer_table WHERE notificationId = :id")
     fun deleteById(id: String)
 
-    @Query("DELETE FROM current_drawer_table WHERE packageName = :pkgName AND groupKey = :key")
-    fun deleteByPackageKey(pkgName: String, key: String)
+    @Query("DELETE FROM current_drawer_table WHERE packageName = :pkgName AND groupKey = :group AND sortKey = :sortKey")
+    fun deleteByPackageSortKey(pkgName: String, group: String, sortKey: String)
 
-    @Query("SELECT * FROM current_drawer_table WHERE packageName = :pkgName AND groupKey = :key")
-    fun getByPackageKey(pkgName:String, key: String): List<CurrentDrawer>
+    @Query("DELETE FROM current_drawer_table WHERE packageName = :pkgName AND groupKey = :group")
+    fun deleteByPackageGroup(pkgName: String, group: String)
+
+    @Query("SELECT * FROM current_drawer_table WHERE packageName = :pkgName AND groupKey = :group")
+    fun getByPackageGroup(pkgName:String, group: String): List<CurrentDrawer>
 
     @Query("DELETE FROM current_drawer_table")
     fun deleteAll()

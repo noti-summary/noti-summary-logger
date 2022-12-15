@@ -7,10 +7,12 @@ import androidx.annotation.RequiresApi
 import com.example.summary_logger.database.room.ActiveContextDatabase
 import com.example.summary_logger.database.room.CurrentDrawerDatabase
 import com.example.summary_logger.database.room.PeriodicContextDatabase
+import com.example.summary_logger.service.NotiListenerService
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -42,7 +44,7 @@ fun uploadSummary(appContext: Context, userId: String, summaryId: String, startT
             "endTime" to datetimeFormat(endTime),
             "submitTime" to datetimeFormat(0),
             "notifications" to drawerList,
-            // TODO: notifications
+            "esm" to hashMapOf<Any, Any>(),
             "summary" to "",
             "reason" to "",
             "selectedNotifications" to listOf<String>()
