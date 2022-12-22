@@ -1,0 +1,2 @@
+SERVER=http://10.44.171.50:5000
+VERCEL=https://noti-summary-questionnaire.vercel.app

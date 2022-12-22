@@ -7,5 +7,8 @@ import androidx.room.PrimaryKey
 data class CurrentDrawer(
     @PrimaryKey(autoGenerate = true)
     var primaryKey: Int = 0,
-    var notificationId: String
+    var notificationId: String,
+    var packageName: String,
+    var groupKey: String,
+    var sortKey: String,
 )

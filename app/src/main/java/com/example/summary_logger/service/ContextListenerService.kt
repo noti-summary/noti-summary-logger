@@ -1,6 +1,8 @@
 package com.example.summary_logger.service
 
 import android.Manifest
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.app.Service
 import android.app.usage.UsageStatsManager
 import android.content.Context
@@ -31,6 +33,8 @@ import com.example.summary_logger.model.PeriodicContext
 import java.util.*
 import kotlin.concurrent.timerTask
 import kotlin.reflect.full.memberProperties
+import com.example.summary_logger.util.TAG
+import com.example.summary_logger.util.upload
 
 class ContextListenerService : Service() {
 
@@ -49,8 +53,6 @@ class ContextListenerService : Service() {
     private var latestPeriodicContext: PeriodicContext = PeriodicContext()
     private var latestActiveContext: ActiveContext = ActiveContext()
 
-    private val TAG = "ContextListenerService"
-
     override fun onCreate() {
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         batteryManager = getSystemService(Context.BATTERY_SERVICE) as BatteryManager
@@ -62,7 +64,7 @@ class ContextListenerService : Service() {
         }
         telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        println("CLS onCreate!")
+        Log.d(TAG, "CLS onCreate!")
     }
 
     // Public for potential external usage
@@ -290,6 +292,13 @@ class ContextListenerService : Service() {
     }
 
     override fun onDestroy() {
-        Log.d(TAG, "CLS onDestroy")
+        val restartServiceIntent = Intent(applicationContext, ContextListenerService::class.java).also {
+            it.setPackage(packageName)
+        };
+        val restartServicePendingIntent: PendingIntent = PendingIntent.getService(this, 1, restartServiceIntent, PendingIntent.FLAG_ONE_SHOT);
+        applicationContext.getSystemService(Context.ALARM_SERVICE);
+        val alarmService: AlarmManager = applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager;
+        alarmService.set(AlarmManager.ELAPSED_REALTIME, System.currentTimeMillis() + 10000, restartServicePendingIntent);
+        Log.d(TAG, "onDestroy")
     }
 }

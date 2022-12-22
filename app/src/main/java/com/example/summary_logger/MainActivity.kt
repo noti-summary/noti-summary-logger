@@ -1,38 +1,63 @@
 package com.example.summary_logger
 
+import android.Manifest
+import android.app.AppOpsManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Process
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.Composable
-import com.example.summary_logger.service.NotiListenerService
-import com.example.summary_logger.util.channelId
-import com.example.summary_logger.util.pushNoti
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.summary_logger.database.room.CurrentDrawerDatabase
 import com.example.summary_logger.jetpack_compose.QRCodeScanner
 import com.example.summary_logger.jetpack_compose.ShowQuestionnaireURL
 import com.example.summary_logger.jetpack_compose.UserIdAlertDialog
 import com.example.summary_logger.service.ContextListenerService
+import com.example.summary_logger.service.NotiListenerService
+import com.example.summary_logger.service.StartOnBoot
 import com.example.summary_logger.ui.theme.SummaryloggerTheme
+import com.example.summary_logger.util.channelId
+import com.example.summary_logger.util.pushNoti
+import com.example.summary_logger.util.upload
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import java.util.*
 
 class MainActivity : ComponentActivity() {
     private lateinit var notificationManager: NotificationManager
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        /* // Delete on restart
+        if (StartOnBoot.startedOnBoot) {
+            val currentDrawerDao = CurrentDrawerDatabase.getInstance(applicationContext).currentDrawerDao()
+            GlobalScope.launch {
+                currentDrawerDao.deleteAll()
+            }
+            StartOnBoot.startedOnBoot = false
+        }
+        */
+
         if (!isNotiListenerEnabled()) {
-            startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"))
+            startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+        }
+
+        if (!isUsageEnabled()) {
+            startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
         }
 
         val notiListenerIntent = Intent(this@MainActivity, NotiListenerService::class.java)
@@ -51,6 +76,9 @@ class MainActivity : ComponentActivity() {
 //                Box {
 //                    NotiButton(this@MainActivity)
 //                }
+                Box {
+                    UploadButton(this@MainActivity)
+                }
             }
         }
         
@@ -69,6 +97,7 @@ class MainActivity : ComponentActivity() {
             this.notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             this.notificationManager.createNotificationChannel(channel)
         }
+
     }
 
     private fun isNotiListenerEnabled(): Boolean {
@@ -77,6 +106,24 @@ class MainActivity : ComponentActivity() {
             Settings.Secure.getString(this.contentResolver, "enabled_notification_listeners")
         return cn.flattenToString() in flat
     }
+
+    private fun chkPermissionOps(opString: String, permission: String): Boolean {
+        val appOps = this.getSystemService(APP_OPS_SERVICE) as AppOpsManager
+        val mode = appOps.checkOpNoThrow(opString, Process.myUid(), this.packageName)
+        return if (mode == AppOpsManager.MODE_DEFAULT) {
+            checkCallingOrSelfPermission(permission) === PackageManager.PERMISSION_GRANTED
+        } else {
+            mode == AppOpsManager.MODE_ALLOWED
+        }
+    }
+
+    private fun isUsageEnabled(): Boolean {
+        return chkPermissionOps(
+            AppOpsManager.OPSTR_GET_USAGE_STATS,
+            Manifest.permission.PACKAGE_USAGE_STATS
+        )
+    }
+
 }
 
 
@@ -99,5 +146,17 @@ fun NotiButton(context: Context) {
         pushNoti("TitleTitle", "ContentContent", context)
     }) {
         Text(text = "Send the Notification")
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun UploadButton(context: Context) {
+    Button(onClick = {
+        val endTime = System.currentTimeMillis()
+        val startTime = endTime - 60000
+        upload(context, startTime, endTime)
+    }) {
+        Text(text = "Upload Summary")
     }
 }
