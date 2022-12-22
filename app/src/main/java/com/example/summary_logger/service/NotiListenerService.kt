@@ -139,6 +139,7 @@ class NotiListenerService : NotificationListenerService() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onListenerConnected() {
         super.onListenerConnected()
+        /*
         Timer().scheduleAtFixedRate(timerTask {
             currentNotiCount = activeNotifications.size
             val currentTime = System.currentTimeMillis()
@@ -148,5 +149,6 @@ class NotiListenerService : NotificationListenerService() {
                 prevUpload = currentTime
             }
         }, 1800000, 100)
+        */
     }
 }
