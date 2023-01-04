@@ -9,6 +9,9 @@ interface CurrentDrawerDao {
     @Query("SELECT notificationId FROM current_drawer_table")
     fun getAll(): List<String>
 
+    @Query("SELECT DISTINCT packageName FROM current_drawer_table")
+    fun getAllPackages(): List<String>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(currentDrawer: CurrentDrawer)
 
