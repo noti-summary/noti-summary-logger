@@ -62,7 +62,7 @@ fun QuestionnaireURL(docs: List<DocumentSnapshot>, currentUserId: String){
         items(docs) { documentSnapshot ->
             val summaryId: String = documentSnapshot.toObject<Summary>()?.summaryId ?: ""
             val userId: String = documentSnapshot.toObject<Summary>()?.userId ?: ""
-            val url = "$vercel/$userId/$summaryId"
+            val url = "$vercel/$summaryId"
 
             val annotatedLinkString: AnnotatedString = buildAnnotatedString {
                 val startIndex = 0
