@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Process
 import android.provider.Settings
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
@@ -26,9 +27,12 @@ import com.example.summary_logger.jetpack_compose.UserIdAlertDialog
 import com.example.summary_logger.service.ContextListenerService
 import com.example.summary_logger.service.NotiListenerService
 import com.example.summary_logger.ui.theme.SummaryloggerTheme
+import com.example.summary_logger.util.TAG
 import com.example.summary_logger.util.channelId
 import com.example.summary_logger.util.pushNoti
 import com.example.summary_logger.util.upload
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.*
 
 class MainActivity : ComponentActivity() {
@@ -37,16 +41,6 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        /* // Delete on restart
-        if (StartOnBoot.startedOnBoot) {
-            val currentDrawerDao = CurrentDrawerDatabase.getInstance(applicationContext).currentDrawerDao()
-            GlobalScope.launch {
-                currentDrawerDao.deleteAll()
-            }
-            StartOnBoot.startedOnBoot = false
-        }
-        */
 
         if (!isNotiListenerEnabled()) {
             startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))

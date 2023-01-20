@@ -262,6 +262,7 @@ class ContextListenerService : Service() {
         // logContextRoom(30000)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            /*
             telephonyManager.registerTelephonyCallback(
                 mainExecutor,
                 object : TelephonyCallback(), TelephonyCallback.CallStateListener {
@@ -278,6 +279,7 @@ class ContextListenerService : Service() {
                         updateActiveContext()
                     }
                 })
+             */
         }
 
         val sensorListener = object:SensorEventListener {
@@ -298,7 +300,7 @@ class ContextListenerService : Service() {
         val restartServiceIntent = Intent(applicationContext, ContextListenerService::class.java).also {
             it.setPackage(packageName)
         };
-        val restartServicePendingIntent: PendingIntent = PendingIntent.getService(this, 1, restartServiceIntent, PendingIntent.FLAG_ONE_SHOT);
+        val restartServicePendingIntent: PendingIntent = PendingIntent.getService(this, 1, restartServiceIntent, PendingIntent.FLAG_IMMUTABLE);
         applicationContext.getSystemService(Context.ALARM_SERVICE);
         val alarmService: AlarmManager = applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager;
         alarmService.set(AlarmManager.ELAPSED_REALTIME, System.currentTimeMillis() + 10000, restartServicePendingIntent);
