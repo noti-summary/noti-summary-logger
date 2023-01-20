@@ -35,6 +35,7 @@ import kotlin.concurrent.timerTask
 import kotlin.reflect.full.memberProperties
 import com.example.summary_logger.util.TAG
 import com.example.summary_logger.util.upload
+import kotlin.collections.HashMap
 
 class ContextListenerService : Service() {
 
@@ -50,8 +51,10 @@ class ContextListenerService : Service() {
     private val pullActiveInterval: Long = 1000
     private val pullPeriodicInterval: Long = 60000
 
-    private var latestPeriodicContext: PeriodicContext = PeriodicContext()
-    private var latestActiveContext: ActiveContext = ActiveContext()
+    companion object {
+        var latestPeriodicContext: PeriodicContext = PeriodicContext()
+        var latestActiveContext: ActiveContext = ActiveContext()
+    }
 
     override fun onCreate() {
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager

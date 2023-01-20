@@ -51,25 +51,26 @@ class NotiListenerService : NotificationListenerService() {
         return super.onBind(intent)
     }
 
-    fun adHocRemove(notiItem: NotiItem): Boolean {
+    private fun adHocRemove(notiItem: NotiItem): Boolean {
         val title = notiItem.getTitle()
         val content = notiItem.getContent()
         val flags = notiItem.getFlags()
-        val package_name = notiItem.getPackageName()
+        val packageName = notiItem.getPackageName()
         val notiId = notiItem.getSbnId()
 
         if (title == "null" && content == "null")
             return true
-        if (package_name == "jp.naver.line.android" && notiId == 16880000)
+        if (packageName == "jp.naver.line.android" && notiId == 16880000)
             return true
-        if (package_name == "com.google.android.gm" && flags?.and(512) != 0)
+        if (packageName == "com.google.android.gm" && flags?.and(512) != 0)
             return true
-        if (package_name == "com.Slack" && flags != 16)
+        if (packageName == "com.Slack" && flags != 16)
             return true
 
         return false
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         Log.d(TAG, "onNotificationPosted")
 

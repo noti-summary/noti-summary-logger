@@ -20,19 +20,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.summary_logger.database.room.CurrentDrawerDatabase
 import com.example.summary_logger.jetpack_compose.QRCodeScanner
 import com.example.summary_logger.jetpack_compose.ShowQuestionnaireURL
 import com.example.summary_logger.jetpack_compose.UserIdAlertDialog
 import com.example.summary_logger.service.ContextListenerService
 import com.example.summary_logger.service.NotiListenerService
-import com.example.summary_logger.service.StartOnBoot
 import com.example.summary_logger.ui.theme.SummaryloggerTheme
 import com.example.summary_logger.util.channelId
 import com.example.summary_logger.util.pushNoti
 import com.example.summary_logger.util.upload
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import java.util.*
 
 class MainActivity : ComponentActivity() {
@@ -77,11 +73,11 @@ class MainActivity : ComponentActivity() {
 //                    NotiButton(this@MainActivity)
 //                }
                 Box {
-                    UploadButton(this@MainActivity)
+                    UploadButton(this@MainActivity, packageManager)
                 }
             }
         }
-        
+
         val contextListenerServiceIntent = Intent(this@MainActivity, ContextListenerService::class.java)
         startService(contextListenerServiceIntent)
 
@@ -151,11 +147,11 @@ fun NotiButton(context: Context) {
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun UploadButton(context: Context) {
+fun UploadButton(context: Context, packageManager: PackageManager) {
     Button(onClick = {
         val endTime = System.currentTimeMillis()
         val startTime = endTime - 60000
-        upload(context, startTime, endTime)
+        upload(context, packageManager, startTime, endTime)
     }) {
         Text(text = "Upload Summary")
     }

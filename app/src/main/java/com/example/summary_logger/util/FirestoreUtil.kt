@@ -1,18 +1,24 @@
 package com.example.summary_logger.util
 
 import android.content.Context
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.os.Build
+import android.util.Base64
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.core.graphics.drawable.toBitmap
 import com.example.summary_logger.database.room.ActiveContextDatabase
 import com.example.summary_logger.database.room.CurrentDrawerDatabase
 import com.example.summary_logger.database.room.PeriodicContextDatabase
+import com.example.summary_logger.service.ContextListenerService
 import com.example.summary_logger.service.NotiListenerService
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.json.JSONObject
+import java.io.ByteArrayOutputStream
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -29,6 +35,44 @@ fun datetimeFormat(time: Long): String {
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
+fun uploadIcons(appContext: Context, packageManager: PackageManager) {
+
+    val currentDrawerDao = CurrentDrawerDatabase.getInstance(appContext).currentDrawerDao()
+
+    GlobalScope.launch {
+
+        val packageList = currentDrawerDao.getAllPackages()
+
+        fun getAppName(packageName: String): String {
+            val ai: ApplicationInfo = packageManager.getApplicationInfo(packageName, 0)
+            return packageManager.getApplicationLabel(ai).toString()
+        }
+
+        fun getIconString(packageName: String): String {
+            val iconBitmap = packageManager.getApplicationIcon(packageName).toBitmap()
+            val byteStream = ByteArrayOutputStream()
+            iconBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream)
+            val byteArray: ByteArray = byteStream.toByteArray()
+            return Base64.encodeToString(byteArray, Base64.DEFAULT)
+        }
+
+        val db = Firebase.firestore
+        val iconStrings = packageList.map { getAppName(it) to getIconString(it) }.toMap()
+
+        db.collection("appicon")
+            .document("appicons")
+            .update(iconStrings)
+            .addOnSuccessListener {
+                Log.d(TAG, "Uploaded icons")
+            }
+            .addOnFailureListener { e ->
+                Log.w(TAG, "Error adding icon to Firestore", e)
+            }
+
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.P)
 fun uploadSummary(appContext: Context, userId: String, summaryId: String, startTime: Long, endTime: Long) {
 
     val currentDrawerDao = CurrentDrawerDatabase.getInstance(appContext).currentDrawerDao()
@@ -47,7 +91,7 @@ fun uploadSummary(appContext: Context, userId: String, summaryId: String, startT
             "esm" to hashMapOf<Any, Any>(),
             "summary" to "",
             "reason" to "",
-            "selectedNotifications" to listOf<String>()
+            "selectedNotifications" to listOf<String>(),
         )
 
         db.collection("summary")
@@ -95,12 +139,13 @@ fun uploadContexts(appContext: Context, userId: String, summaryId: String, start
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-fun upload(context: Context, beginTime: Long, endTime: Long) {
+fun upload(context: Context, packageManager: PackageManager, beginTime: Long, endTime: Long) {
     val sharedPref = context.getSharedPreferences("user_id", Context.MODE_PRIVATE)
     val userId = sharedPref.getString("user_id", "000").toString()
     val time = System.currentTimeMillis()
     val summaryId = "${userId}_$time"
     uploadSummary(context, userId, summaryId, beginTime, endTime)
     uploadContexts(context, userId, summaryId, beginTime, endTime)
+    uploadIcons(context, packageManager)
 }
 
