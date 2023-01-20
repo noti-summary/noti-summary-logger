@@ -92,9 +92,6 @@ fun uploadSummary(appContext: Context, userId: String, summaryId: String, startT
             "summary" to "",
             "reason" to "",
             "selectedNotifications" to listOf<String>(),
-            // TODO: Get live locations
-            "longitude" to ContextListenerService.latestPeriodicContext.longitude,
-            "latitude" to ContextListenerService.latestPeriodicContext.latitude,
         )
 
         db.collection("summary")

@@ -54,7 +54,6 @@ class ContextListenerService : Service() {
     companion object {
         var latestPeriodicContext: PeriodicContext = PeriodicContext()
         var latestActiveContext: ActiveContext = ActiveContext()
-
     }
 
     override fun onCreate() {
