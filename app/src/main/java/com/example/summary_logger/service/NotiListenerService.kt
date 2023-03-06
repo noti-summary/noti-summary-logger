@@ -4,17 +4,27 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ApplicationInfo
+import android.graphics.Bitmap
+import android.media.MediaPlayer
 import android.os.Build
 import android.os.IBinder
+import android.os.SystemClock
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import android.util.Base64
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.core.graphics.drawable.toBitmap
+import com.example.summary_logger.MainActivity
 import com.example.summary_logger.database.room.CurrentDrawerDatabase
 import com.example.summary_logger.util.TAG
 import com.example.summary_logger.util.upload
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
 import java.util.*
 import kotlin.concurrent.timerTask
 
@@ -22,9 +32,11 @@ class NotiListenerService : NotificationListenerService() {
 
     companion object {
         var currentNotiCount: Int = 0
-        var notiThreshold: Int = 0
-        var timeThreshold: Long = 600000
+        val notiThreshold: Int = 0
+        val timeThreshold: Long = 600000
+        val uptimeThreshold: Long = 300000
         var prevUpload: Long = 0L
+        var connected: Boolean = false
     }
 
     override fun onCreate() {
@@ -73,10 +85,11 @@ class NotiListenerService : NotificationListenerService() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         Log.d(TAG, "onNotificationPosted")
+        appendNotifications(sbn)
+    }
 
+    private fun appendNotifications(sbn: StatusBarNotification?) {
         try {
-
-            Log.d(TAG, "TAG: ${sbn?.tag}")
 
             if (sbn?.tag == null)
                 return
@@ -102,9 +115,7 @@ class NotiListenerService : NotificationListenerService() {
                 Log.d(TAG, "insert drawerNoti")
                 notiItem.logProperty()
             }
-
             notiItem.upload()
-//            TODO("double noti in Messenger")
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -140,16 +151,35 @@ class NotiListenerService : NotificationListenerService() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onListenerConnected() {
         super.onListenerConnected()
-        /*
-        Timer().scheduleAtFixedRate(timerTask {
-            currentNotiCount = activeNotifications.size
-            val currentTime = System.currentTimeMillis()
-            val timeDelta = currentTime - prevUpload
-            if (currentNotiCount > notiThreshold && timeDelta > timeThreshold) {
-                upload(applicationContext, prevUpload, currentTime)
-                prevUpload = currentTime
+        connected = true
+
+        if (SystemClock.uptimeMillis() < uptimeThreshold) {
+            val currentDrawerDao = CurrentDrawerDatabase.getInstance(applicationContext).currentDrawerDao()
+            GlobalScope.launch {
+                currentDrawerDao.deleteAll()
+                activeNotifications.forEach {
+                    appendNotifications(it)
+                }
             }
-        }, 1800000, 100)
-        */
+        }
+
+        Timer().scheduleAtFixedRate(timerTask {
+
+            val currentDrawerDao = CurrentDrawerDatabase.getInstance(applicationContext).currentDrawerDao()
+            GlobalScope.launch {
+                currentNotiCount = currentDrawerDao.getAll().size
+                val currentTime = System.currentTimeMillis()
+                val timeDelta = currentTime - prevUpload
+                if (currentNotiCount > notiThreshold && timeDelta > timeThreshold) {
+                    // upload(applicationContext, prevUpload, currentTime)
+                    prevUpload = currentTime
+                }
+            }
+        }, 1800000, 10000)
+    }
+
+    override fun onListenerDisconnected() {
+        super.onListenerDisconnected()
+        connected = false
     }
 }

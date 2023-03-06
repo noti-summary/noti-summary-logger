@@ -12,15 +12,10 @@ import kotlinx.coroutines.launch
 
 class StartOnBoot : BroadcastReceiver() {
 
-    companion object {
-        var startedOnBoot: Boolean = false
-    }
-
     override fun onReceive(context: Context?, intent: Intent?) {
         if (Intent.ACTION_BOOT_COMPLETED == intent!!.action) {
             val startIntent = Intent(context, MainActivity::class.java)
             startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            startedOnBoot = true
             context!!.startActivity(startIntent)
         }
     }
